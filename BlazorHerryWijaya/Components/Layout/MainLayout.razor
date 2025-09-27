@@ -1,4 +1,5 @@
-﻿@inherits LayoutComponentBase
+﻿@using MudBlazor
+@inherits LayoutComponentBase
 
 <div class="page">
     <div class="sidebar">
@@ -11,7 +12,10 @@
         </div>
 
         <article class="content px-4">
-            @Body
+            @* @Body *@
+         
+        @Body                <!-- page content here -->
+    
         </article>
     </main>
 </div>

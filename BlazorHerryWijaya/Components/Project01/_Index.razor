@@ -3,19 +3,73 @@
 @inject IJSRuntime JS
 @inject IRepositoryProject01 _project01Repository
 
-    
-<MudTable Items="Companies" Hover="true" Bordered="true" Striped="true">
+
+<MudTextField @bind-Value="searchString"
+              Placeholder="Search Company..."
+              Adornment="Adornment.Start"
+              AdornmentIcon="@Icons.Material.Filled.Search" />
+
+<MudTextField @bind-Value="productSearch"
+              Placeholder="Search Product..."
+              Adornment="Adornment.Start"
+              AdornmentIcon="@Icons.Material.Filled.Search" />
+<MudTable Items="Companies.Where(c => FilterFunc(c))" Hover="true" Bordered="true" Striped="true">
     <HeaderContent>
         <MudTh>Name</MudTh>
         <MudTh>Inventory Count</MudTh>
+        <MudTh>Inspect</MudTh>
     </HeaderContent>
     <RowTemplate>
         <MudTd DataLabel="Name">@context.Name</MudTd>
         <MudTd DataLabel="Inventory">@context.Inventories.Count()</MudTd>
+        <MudTd >
+            <MudButton Variant="Variant.Outlined"
+                       Size="Size.Small"
+                       OnClick="() => ShowDialog(context)" >
+                Inspect
+            </MudButton>
+        </MudTd>
+
     </RowTemplate>
 </MudTable>
 
 @code {
+    [Inject] IDialogService DialogService { get; set; } = default!;
+
+    private async Task ShowDialog(Company company)
+    {
+        var parameters = new DialogParameters
+        {
+            ["Company"] = company
+        };
+
+        var dialog = await DialogService.ShowAsync<_CompanyModal>(
+            "Company Details",
+            parameters
+        );
+
+        await dialog.Result;
+    }
+
+    private string searchString = "";
+    private string productSearch = "";
+    private bool FilterFunc(Company company)
+    {
+        // Filter by company name
+        bool matchCompany = string.IsNullOrWhiteSpace(searchString) ||
+                            company.Name.Contains(searchString, StringComparison.OrdinalIgnoreCase);
+
+        // Filter by product name inside inventories
+        bool matchProduct = string.IsNullOrWhiteSpace(productSearch) ||
+                            company.Inventories.Any(ci =>
+                                ci.Product != null &&
+                                ci.Product.Name.Contains(productSearch, StringComparison.OrdinalIgnoreCase));
+
+        return matchCompany && matchProduct;
+    }
+
+
+
     public IEnumerable<Company> Companies { get; set; } = new List<Company>();
 
 
@@ -24,7 +78,7 @@
     {
         //return base.OnInitializedAsync();
         await LoadCompanies();
-        await JS.InvokeVoidAsync("DataTableInterop.init", "productTable");
+      //  await JS.InvokeVoidAsync("DataTableInterop.init", "productTable");
     }
     private async Task LoadCompanies()
     {

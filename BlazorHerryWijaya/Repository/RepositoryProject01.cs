@@ -15,7 +15,13 @@ namespace BlazorHerryWijaya.Repository
         }
         public async Task<IEnumerable<Company>> GetAll()
         {
-            return await dbContext.Company.Include(x=>x.Inventories).ToListAsync();
+            return await dbContext.Company
+             //   .Include(x=>x.Inventories)
+              //  .ThenInclude(x=>x.Company)
+                .Include(x=>x.Inventories)
+                .ThenInclude(x=>x.Product)
+               .AsNoTracking()
+                .ToListAsync();
 
         }
     }
