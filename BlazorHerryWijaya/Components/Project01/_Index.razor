@@ -8,11 +8,13 @@
               Placeholder="Search Company..."
               Adornment="Adornment.Start"
               AdornmentIcon="@Icons.Material.Filled.Search" />
-
+              <br />
 <MudTextField @bind-Value="productSearch"
               Placeholder="Search Product..."
               Adornment="Adornment.Start"
               AdornmentIcon="@Icons.Material.Filled.Search" />
+<br />
+
 <MudTable Items="Companies.Where(c => FilterFunc(c))" Hover="true" Bordered="true" Striped="true">
     <HeaderContent>
         <MudTh>Name</MudTh>
