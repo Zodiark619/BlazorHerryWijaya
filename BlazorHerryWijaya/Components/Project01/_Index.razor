@@ -1,0 +1,36 @@
+﻿@using BlazorHerryWijaya.Repository.IRepository
+@using MudBlazor
+@inject IJSRuntime JS
+@inject IRepositoryProject01 _project01Repository
+
+    
+<MudTable Items="Companies" Hover="true" Bordered="true" Striped="true">
+    <HeaderContent>
+        <MudTh>Name</MudTh>
+        <MudTh>Inventory Count</MudTh>
+    </HeaderContent>
+    <RowTemplate>
+        <MudTd DataLabel="Name">@context.Name</MudTd>
+        <MudTd DataLabel="Inventory">@context.Inventories.Count()</MudTd>
+    </RowTemplate>
+</MudTable>
+
+@code {
+    public IEnumerable<Company> Companies { get; set; } = new List<Company>();
+
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        //return base.OnInitializedAsync();
+        await LoadCompanies();
+        await JS.InvokeVoidAsync("DataTableInterop.init", "productTable");
+    }
+    private async Task LoadCompanies()
+    {
+        Companies = await _project01Repository.GetAll();
+
+    }
+
+
+}
