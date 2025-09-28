@@ -1,0 +1,33 @@
+﻿@using BlazorHerryWijaya.Repository.IRepository
+@using MudBlazor
+@inject IRepositoryProject01 _project01Repository
+
+<MudDialog>
+    <DialogContent>
+        <MudTextField @bind-Value="Product.Name" Label="Product Name" Required="true" />
+
+        <!-- You can add more fields here -->
+    </DialogContent>
+
+    <DialogActions>
+        <MudButton Color="Color.Primary" OnClick="Save">Save</MudButton>
+        <MudButton Color="Color.Secondary" OnClick="Cancel">Cancel</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] IMudDialogInstance MudDialog { get; set; } = default!;
+    [Parameter] public Product Product { get; set; } = default!;
+
+    private async Task Save()
+    {
+        // Validate inputs here if needed
+        await _project01Repository.CreateProduct(Product);
+        MudDialog.Close(DialogResult.Ok(Product));
+    }
+
+    private void Cancel()
+    {
+        MudDialog.Cancel();
+    }
+}

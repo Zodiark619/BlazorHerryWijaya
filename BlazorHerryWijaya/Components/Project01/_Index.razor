@@ -2,24 +2,33 @@
 @using MudBlazor
 @inject IJSRuntime JS
 @inject IRepositoryProject01 _project01Repository
+@inject ISnackbar Snackbar
 
-
+<MudStack Spacing="2">
+<MudButton Variant="Variant.Outlined"
+           Size="Size.Small"
+           OnClick="CreateCompany">
+    Create New Company
+</MudButton>
+<MudButton Variant="Variant.Outlined"
+           Size="Size.Small"
+           OnClick="CreateProduct">
+    Create New Product
+</MudButton>
 <MudTextField @bind-Value="searchString"
               Placeholder="Search Company..."
               Adornment="Adornment.Start"
               AdornmentIcon="@Icons.Material.Filled.Search" />
-              <br />
 <MudTextField @bind-Value="productSearch"
               Placeholder="Search Product..."
               Adornment="Adornment.Start"
               AdornmentIcon="@Icons.Material.Filled.Search" />
-<br />
-
+</MudStack>
 <MudTable Items="Companies.Where(c => FilterFunc(c))" Hover="true" Bordered="true" Striped="true">
     <HeaderContent>
         <MudTh>Name</MudTh>
         <MudTh>Inventory Count</MudTh>
-        <MudTh>Inspect</MudTh>
+        <MudTh>Action</MudTh>
     </HeaderContent>
     <RowTemplate>
         <MudTd DataLabel="Name">@context.Name</MudTd>
@@ -36,7 +45,60 @@
 </MudTable>
 
 @code {
-    [Inject] IDialogService DialogService { get; set; } = default!;
+    [Inject] 
+    IDialogService DialogService { get; set; } = default!;
+
+    private async Task CreateCompany()
+    {
+        var parameters = new DialogParameters
+        {
+            // You can pass parameters if needed, e.g., default values
+            ["Company"] = new Company()
+        };
+
+        var dialog = await DialogService.ShowAsync<_CreateCompany>(
+            "Create New Company",
+            parameters
+        );
+
+        var result = await dialog.Result;
+
+        if (!result.Canceled && result.Data is Company newCompany)
+        {
+            // Add new company to your list or save to DB
+            //   Companies = Companies.Append(newCompany);
+            Companies.Add(newCompany);
+            StateHasChanged();
+            Snackbar.Add($"New Company {newCompany.Name} has been successfully created", Severity.Success);
+
+        }
+    }
+    private async Task CreateProduct()
+    {
+        var parameters = new DialogParameters
+        {
+            // You can pass parameters if needed, e.g., default values
+            ["Product"] = new Product()
+        };
+
+        var dialog = await DialogService.ShowAsync<_CreateProduct>(
+            "Create New Product",
+            parameters
+        );
+
+        var result = await dialog.Result;
+
+        if (!result.Canceled && result.Data is Product newProduct)
+        {
+            // Add new company to your list or save to DB
+            //   Companies = Companies.Append(newCompany);
+           // Companies.Add(newCompany);
+            StateHasChanged();
+            Snackbar.Add($"New Product {newProduct.Name} has been successfully created", Severity.Success);
+
+        }
+    }
+
 
     private async Task ShowDialog(Company company)
     {
@@ -46,7 +108,7 @@
         };
 
         var dialog = await DialogService.ShowAsync<_CompanyModal>(
-            "Company Details",
+            "Company Inventory Details",
             parameters
         );
 
@@ -72,7 +134,7 @@
 
 
 
-    public IEnumerable<Company> Companies { get; set; } = new List<Company>();
+    public List<Company> Companies { get; set; } = new List<Company>();
 
 
 
@@ -84,7 +146,7 @@
     }
     private async Task LoadCompanies()
     {
-        Companies = await _project01Repository.GetAll();
+        Companies = await _project01Repository.GetAllCompany();
 
     }
 
