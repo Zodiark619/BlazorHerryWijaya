@@ -17,7 +17,7 @@
 
 @code {
     [CascadingParameter] IMudDialogInstance MudDialog { get; set; } = default!;
-    [Parameter] public Product Product { get; set; } = default!;
+    [Parameter] public ProductDtoSave Product { get; set; } = default!;
 
     private async Task Save()
     {

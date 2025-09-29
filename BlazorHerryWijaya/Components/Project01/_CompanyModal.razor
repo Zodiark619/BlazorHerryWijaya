@@ -1,4 +1,8 @@
-﻿@using MudBlazor
+﻿@using BlazorHerryWijaya.Repository.IRepository
+@using MudBlazor
+@inject IRepositoryProject01 _project01Repository
+@inject ISnackbar Snackbar
+
 <MudDialog>
     <DialogContent>
         @if (Company is null)
@@ -8,24 +12,48 @@
         else
         {
             <h4>@Company.Name</h4>
-            <MudTable Items="Company.Inventories" Bordered="true" Striped="true">
+
+            
+                  <MudTable Items="CompanyInventories" Bordered="true" Striped="true">
                 <HeaderContent>
                     <MudTh>Product</MudTh>
                     <MudTh>Stock</MudTh>
                 </HeaderContent>
                 <RowTemplate>
-                    <MudTd>@context.Product.Name</MudTd>
+                    <MudTd>@context.ProductName</MudTd>
                     <MudTd>@context.StockQuantity</MudTd>
                 </RowTemplate>
+                <NoRecordsContent>
+        @if (CompanyInventories == null || !CompanyInventories.Any())
+        {
+            <MudTr>
+                <MudTd ColSpan="2" Class="text-center">
+                    No inventory in this company
+                </MudTd>
+            </MudTr>
+        }
+    </NoRecordsContent>
             </MudTable>
             
+          
+            
         }
-        <MudSelect T="Product" @bind-Value="selectedProduct" Label="Select Product" Dense="true">
-            @foreach (var product in Products)
-            {
-                <MudSelectItem T="Product" Value="product">@product.Name</MudSelectItem>
-            }
-        </MudSelect>
+        <MudStack Spacing="2" Class="mt-4">
+            <MudSelect T="ProductDto" @bind-Value="selectedProduct" Label="Select Product" Dense="true">
+                @foreach (var product in Products)
+                {
+                    <MudSelectItem T="ProductDto" Value="product">@product.Name</MudSelectItem>
+                }
+            </MudSelect>
+
+            <MudNumericField @bind-Value="stockQuantity" Label="Stock Quantity" Min="0" Immediate="true" />
+
+            <MudButton Variant="Variant.Filled" Color="Color.Primary"
+                       OnClick="AddInventory"
+                       Disabled="@(selectedProduct == null)">
+                Add Inventory
+            </MudButton>
+        </MudStack>
     </DialogContent>
 
     <DialogActions>
@@ -34,12 +62,63 @@
 </MudDialog>
 
 @code {
-    [Parameter] public List<Product> Products { get; set; } = new(); // pass products from parent
+    private async Task AddInventory()
+    {
+        if (Company == null)
+            return; // or show Snackbar warning
+        if (selectedProduct != null && stockQuantity > 0)
+        {
 
-    private Product? selectedProduct;
 
-    [CascadingParameter] IMudDialogInstance MudDialog { get; set; } = default!;
-    [Parameter] public Company Company { get; set; } = default!;
+            var addInventory = new CompanyInventoryDtoSave
+            {
+                ProductId=selectedProduct.Id,
+                StockQuantity=stockQuantity,
+                CompanyId = CompanyId
+            };
+            await _project01Repository.AddProductToInventory(addInventory);
+
+            CompanyInventories.Add(new CompanyInventoryDto
+            {
+               
+                ProductId = selectedProduct.Id,
+                ProductName = selectedProduct.Name ,   // important so Product.Name displays immediately
+                // Product = selectedProduct,   // important so Product.Name displays immediately
+                StockQuantity = stockQuantity,
+                
+            });
+            StateHasChanged();
+            Snackbar.Add($"New Inventory {selectedProduct.Name} has been successfully created", Severity.Success);
+            // Reset inputs
+            selectedProduct = null;
+            stockQuantity = 0;
+        }
+    }
+    private int stockQuantity;
+
+
+    [Parameter]
+    public List<ProductDto> Products { get; set; } = new(); // pass products from parent
+
+    private ProductDto? selectedProduct;
+
+    [CascadingParameter]
+    IMudDialogInstance MudDialog { get; set; } = default!;
+
+
+    public CompanyDto? Company { get; set; } = default!;
 
     private void Close() => MudDialog.Close();
+
+    [Parameter] 
+    public int CompanyId { get; set; }
+
+    public List<CompanyInventoryDto> CompanyInventories { get; set; } = new();
+    protected override async Task OnInitializedAsync()
+    {
+        Products = await _project01Repository.GetAllProduct();
+        Company = await _project01Repository.GetCompanyById(CompanyId);
+        CompanyInventories = await _project01Repository.GetInventoryByCompanyId(CompanyId);
+    }
+
 }

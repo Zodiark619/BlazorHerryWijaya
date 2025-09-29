@@ -16,8 +16,10 @@
 </MudDialog>
 
 @code {
-    [CascadingParameter] IMudDialogInstance MudDialog { get; set; } = default!;
-    [Parameter] public Company Company { get; set; } = default!;
+    [CascadingParameter] 
+    IMudDialogInstance MudDialog { get; set; } = default!;
+    [Parameter] 
+    public CompanyDtoSave Company { get; set; } = default!;
 
     private async Task Save()
     {

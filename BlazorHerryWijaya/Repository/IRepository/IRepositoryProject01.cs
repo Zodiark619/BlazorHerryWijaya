@@ -8,10 +8,13 @@ namespace BlazorHerryWijaya.Repository.IRepository
 
 
 
-        public Task<List<Company>> GetAllCompany();
-        public Task<List<Product>> GetAllProduct();
-        public Task CreateCompany(Company company);
-        public Task CreateProduct(Product product);
-        public Task AddProductToInventory(AddCompanyInventoryViewModel viewModel);
+        public Task<List<CompanyDto>> GetAllCompany();
+        public Task<List<ProductDto>> GetAllProduct();
+        public Task CreateCompany(CompanyDtoSave company);
+        public Task CreateProduct(ProductDtoSave product);
+        public Task AddProductToInventory(CompanyInventoryDtoSave companyInventory);
+
+        public Task<CompanyDto?> GetCompanyById(int id);    
+        public Task<List<CompanyInventoryDto>> GetInventoryByCompanyId(int companyId);
     }
 }
