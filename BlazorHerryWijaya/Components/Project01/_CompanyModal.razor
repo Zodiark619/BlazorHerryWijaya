@@ -3,6 +3,7 @@
 @inject IRepositoryProject01 _project01Repository
 @inject ISnackbar Snackbar
 
+@inject IJSRuntime JS
 <MudDialog>
     <DialogContent>
         @if (Company is null)
@@ -34,7 +35,9 @@
         }
     </NoRecordsContent>
             </MudTable>
-            
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="DownloadJson">
+    Download JSON
+</MudButton>
           
             
         }
@@ -62,6 +65,23 @@
 </MudDialog>
 
 @code {
+    private async Task DownloadJson()
+    {
+        // Example data (you could fetch from DB, DTOs, etc.)
+        var company = Company;
+
+        // 1. Serialize to JSON
+        var json = System.Text.Json.JsonSerializer.Serialize(company,
+            new System.Text.Json.JsonSerializerOptions { WriteIndented = true });
+
+        // 2. Convert JSON into a base64 data URI
+        var bytes = System.Text.Encoding.UTF8.GetBytes(json);
+        var base64 = Convert.ToBase64String(bytes);
+        var url = $"data:application/json;base64,{base64}";
+
+        // 3. Trigger browser download
+        await JS.InvokeVoidAsync("downloadFileFromUrl", "company.json", url);
+    }
     private async Task AddInventory()
     {
         if (Company == null)
