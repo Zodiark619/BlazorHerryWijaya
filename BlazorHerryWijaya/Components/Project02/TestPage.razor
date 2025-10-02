@@ -1,0 +1,35 @@
+﻿@page "/project02"
+@inject IHttpClientFactory ClientFactory
+@using System.Net.Http.Json
+@using MudBlazor
+
+<MudTable Items="products">
+    <HeaderContent>
+        <MudTh>ID</MudTh>
+        <MudTh>Name</MudTh>
+        <MudTh>Price</MudTh>
+    </HeaderContent>
+    <RowTemplate Context="p">
+        <MudTd DataLabel="ID">@p.Id</MudTd>
+        <MudTd DataLabel="Name">@p.Name</MudTd>
+        <MudTd DataLabel="Price">@p.Price</MudTd>
+    </RowTemplate>
+</MudTable>
+
+@code {
+    private List<Product>? products;
+    private HttpClient _http;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _http = ClientFactory.CreateClient("ServerAPI");
+        products = await _http.GetFromJsonAsync<List<Product>>("api/products"); // ✅ assign to field
+    }
+
+    public class Product
+    {
+        public int Id { get; set; }
+        public string Name { get; set; } = string.Empty;
+        public decimal Price { get; set; }
+    }
+}
